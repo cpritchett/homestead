@@ -1,5 +1,7 @@
 """The names Homestead gives its objects, and the keys it writes on them."""
 import re
+import os
+import subprocess
 import sys
 import unittest
 import urllib.error
@@ -16,6 +18,17 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class NameTests(unittest.TestCase):
+    def test_helper_repository_override_preserves_default(self):
+        for value, expected in [("", "ghcr.io/homestead-lab/homestead"),
+                                ("ghcr.io/example/homestead", "ghcr.io/example/homestead")]:
+            with self.subTest(repository=value):
+                env = dict(os.environ, HOMESTEAD_IMAGE_REPOSITORY=value)
+                output = subprocess.check_output(
+                    [sys.executable, "-c", "import homestead_names as n; import homestead_probe as p; "
+                     "print(n.IMAGE); print(p.manifest('test', 'lab', scripts={})[1]['spec']['template']['spec']['containers'][-1]['image'])"],
+                    cwd=ROOT / "server", env=env, text=True)
+                self.assertEqual([expected, expected + ":test"], output.splitlines())
+
     def test_objects_are_named_homestead(self):
         self.assertEqual("homestead-settings", names.object_name("settings", "lab"))
         self.assertEqual("homestead-nodeprobe", names.NODEPROBE)

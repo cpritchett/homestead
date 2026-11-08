@@ -6,6 +6,7 @@ in one place, so no module spells a name or key its own way.
 """
 
 import hashlib
+import os
 import urllib.parse
 
 BRAND = "homestead"
@@ -13,7 +14,7 @@ DOMAIN = "homestead.io"
 NODEPROBE = f"{BRAND}-nodeprobe"
 
 # Where Homestead's own image is published.
-IMAGE = "ghcr.io/homestead-lab/homestead"
+IMAGE = os.environ.get("HOMESTEAD_IMAGE_REPOSITORY", "").strip() or "ghcr.io/homestead-lab/homestead"
 
 kget = None
 
